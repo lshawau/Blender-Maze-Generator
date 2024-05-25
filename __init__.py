@@ -141,9 +141,6 @@ class MESH_OT_generate_maze(bpy.types.Operator):
             bpy.context.view_layer.objects.active = grid_obj
             bpy.ops.object.modifier_apply(modifier="Solidify")
 
-        bpy.context.scene.unit_settings.system = 'METRIC'
-        bpy.context.scene.unit_settings.scale_length = 1
-
         grid_obj = create_grid(rows, cols, cell_size)
         remove_edges(grid_obj)
         extrude_edges(grid_obj, wall_height)
