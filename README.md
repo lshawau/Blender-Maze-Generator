@@ -1,5 +1,5 @@
 # Blender-Maze-Generator
-A comprehensive Maze generator for Blender 4.1
+A comprehensive Maze generator for Blender 4.1+
 
 **Description:**
 The Maze Generator is a Blender add-on designed to create customizable, random maze meshes within Blender. This tool is ideal for users in game development, architectural visualization, or artistic projects who need to quickly generate complex mazes with various configurations.
@@ -24,14 +24,14 @@ Wall Height: Controls the height of the maze walls.
 
    
 **Compatibility:**
-Blender 4.1. (Untested on earlier versions)
+Blender 4.1+ (Untested on earlier versions)
 
 **Author:**
 Lee Shaw
 
 
 **Version:**
-0.2
+0.2.1
 
 
 **License:**
