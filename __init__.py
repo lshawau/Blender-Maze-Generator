@@ -1,18 +1,17 @@
-# Copyright (C) <2024>  <Leeroy Majors>
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
+#   Copyright (C) <2024>  <Lee Shaw>
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
 #
-# You should have received a copy of the GNU General Public License along
-# with this program; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-
+#   You should have received a copy of the GNU General Public License along
+#   with this program; if not, write to the Free Software Foundation, Inc.,
+#   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 bl_info = {
     "name": "Maze Generator",
@@ -27,20 +26,20 @@ bl_info = {
     "tracker_url": "https://github.com/lshawau/Blender-Maze-Generator/issues",
 }
 
-
 import bpy
 import random
 import bmesh
 import time
 
-#    Represents a single vertex in the maze grid.
+#   Represents a single vertex in the maze grid.
 
-#    Attributes:
-#        row (int): Row index of the vertex in the grid.
+#   Attributes:
+#       row (int): Row index of the vertex in the grid.
 #       col (int): Column index of the vertex.
-#        direction (Vertex): Optional; points to another vertex to establish a path in the maze.
+#       direction (Vertex): Optional; points to another vertex to establish a path in the maze.
 
-#    The `direction` attribute is used to trace the path from one vertex to another, forming the corridors of the maze.
+#   The `direction` attribute is used to trace the path from one vertex to another, forming the corridors of the maze.
+
 class Vertex:
     def __init__(self, row, col):
         self.row = row # Row index of the vertex in the grid or graph
@@ -126,51 +125,55 @@ class OBJECT_OT_GenerateMaze(bpy.types.Operator):
         description="Whether to apply the bevel modifier to the maze walls"
     )
 
-#Executes the maze generation process, updates the scene, and handles errors and performance timing.
 
-#This method coordinates the steps involved in generating a new maze, including initializing the grid, 
-#creating the maze structure, and applying necessary modifications. 
-#It also measures the execution time for performance tracking.
+#   Executes the maze generation process, updates the scene, and handles errors and performance timing.
 
-#Parameters:
-#    context (bpy.types.Context): The context in which the operator is executed, 
-#    providing access to data and area of Blender being operated on.
+#   This method coordinates the steps involved in generating a new maze, including initializing the grid, 
+#   creating the maze structure, and applying necessary modifications. 
+#   It also measures the execution time for performance tracking.
 
-#Returns:
-#    {'FINISHED'} if the maze generation completes successfully,
-#    {'CANCELLED'} if an error occurs during the process.
+#   Parameters:
+#       context (bpy.types.Context): The context in which the operator is executed, 
+#       providing access to data and area of Blender being operated on.
 
-#Raises:
-#    Exception: If any step in the maze generation process fails, 
-#    an error is reported through Blender's reporting system, and the exception is re-raised to halt further execution. 
-#    This ensures that partial or incorrect maze generation does not occur.
+#   Returns:
+#       {'FINISHED'} if the maze generation completes successfully,
+#       {'CANCELLED'} if an error occurs during the process.
+
+#   Raises:
+#       Exception: If any step in the maze generation process fails, 
+#       an error is reported through Blender's reporting system, and the exception is re-raised to halt further execution. 
+#       This ensures that partial or incorrect maze generation does not occur.
+
     def execute(self, context):
     
         try:
+            time_start = time.time()
+
             random.seed(self.random_seed)
-        
-            #Time how long the script takes to run
-            total_start_time = time.time()
         
             self.deselect_objects()
             self.delete_existing_maze()
             create_grid(self.rows, self.columns, self.cell_size, self.wall_height, self.iterations, self.delete_islands, self.island_wall_count, self.apply_solidify, self.apply_bevel)
         
-            total_end_time = time.time()
-            total_duration = total_end_time - total_start_time
-            #Output to console
-            print(f"Maze generation completed in {total_duration:.2f} seconds.")
+            time_end = time.time()
+            duration = time_end - time_start
+            # Output to console
+            print()
+            print(f"Maze generation completed in {duration:.3f} seconds.")
+            print()
             
         except Exception as e:
             self.report({'ERROR'}, f"An error occurred: {str(e)}")
             return {'CANCELLED'}    
         return {'FINISHED'}
-        
-#    Deselects all objects in the current Blender view layer.
 
-#    This method ensures that no objects are selected in the scene before starting the maze generation,
-#    preventing unintended transformations or deletions of unrelated objects during the maze creation process.
-#    It is a crucial step to maintain a clean state in the Blender environment, especially before operations that modify the mesh data.
+
+#   Deselects all objects in the current Blender view layer.
+
+#   This method ensures that no objects are selected in the scene before starting the maze generation,
+#   preventing unintended transformations or deletions of unrelated objects during the maze creation process.
+#   It is a crucial step to maintain a clean state in the Blender environment, especially before operations that modify the mesh data.
 
     def deselect_objects(self):
     
@@ -182,10 +185,12 @@ class OBJECT_OT_GenerateMaze(bpy.types.Operator):
             self.report({'ERROR'}, f"Failed to deselect objects: {str(e)}")
             raise
 
-#    Deletes the maze object named "Maze" from the current Blender view layer.
 
-#    This method ensures that the prior maze is deleted before generating a new one to reduce clutter and prevent conflicts. 
-#    It specifically targets an object named "Maze" and will not delete objects with different names.
+#   Deletes the maze object named "Maze" from the current Blender view layer.
+
+#   This method ensures that the prior maze is deleted before generating a new one to reduce clutter and prevent conflicts. 
+#   It specifically targets an object named "Maze" and will not delete objects with different names.
+
     def delete_existing_maze(self):
     
         try:
@@ -198,26 +203,29 @@ class OBJECT_OT_GenerateMaze(bpy.types.Operator):
             raise
 
 
-#    Generates the grid layout for the maze and initializes vertices, applying specified modifiers and settings.
+#   Generates the grid layout for the maze and initializes vertices, applying specified modifiers and settings.
 
-#    This function sets up a grid of vertices based on the specified number of rows and columns. 
-#    It initializes the maze structure by linking vertices according to the maze generation algorithm. 
-#    The function also handles the application of Blender modifiers like solidify and bevel based on user inputs, 
-#    and performs cleanup tasks like deleting isolated islands within the maze.
+#   This function sets up a grid of vertices based on the specified number of rows and columns. 
+#   It initializes the maze structure by linking vertices according to the maze generation algorithm. 
+#   The function also handles the application of Blender modifiers like solidify and bevel based on user inputs, 
+#   and performs cleanup tasks like deleting isolated islands within the maze.
 
-#    Parameters:
-#        rows (int): Number of rows in the maze grid.
-#        cols (int): Number of columns in the maze grid.
-#        cell_size (int): Size of each cell in the maze (XY dimensions).
-#        wall_height (float): Height of the maze walls.
-#        iterations (int): Number of iterations for the maze generation algorithm.
-#        delete_islands (bool): Flag to determine whether to remove isolated sections of the maze.
-#        island_wall_count (int): Maximum number of walls an island can have before it is removed.
-#        apply_solidify (bool): Flag to determine whether to apply the solidify modifier to the maze walls.
-#        apply_bevel (bool): Flag to determine whether to apply the bevel modifier to the maze walls.
+#   Parameters:
+#       rows (int): Number of rows in the maze grid.
+#       cols (int): Number of columns in the maze grid.
+#       cell_size (int): Size of each cell in the maze (XY dimensions).
+#       wall_height (float): Height of the maze walls.
+#       iterations (int): Number of iterations for the maze generation algorithm.
+#       delete_islands (bool): Flag to determine whether to remove isolated sections of the maze.
+#       island_wall_count (int): Maximum number of walls an island can have before it is removed.
+#       apply_solidify (bool): Flag to determine whether to apply the solidify modifier to the maze walls.
+#       apply_bevel (bool): Flag to determine whether to apply the bevel modifier to the maze walls.
+
 def create_grid(rows, cols, cell_size, wall_height, iterations, delete_islands, island_wall_count, apply_solidify, apply_bevel):
 
     try:
+        time_start = time.time()
+
         vertices = [[Vertex(row, col) for col in range(cols)] for row in range(rows)]
         initialize_maze(vertices, rows, cols)
         
@@ -250,17 +258,27 @@ def create_grid(rows, cols, cell_size, wall_height, iterations, delete_islands, 
             apply_bevel_modifier(obj, apply_bevel)
             
         apply_transform_and_cleanup(obj, wall_height)
+
+        time_end = time.time()
+        duration = time_end - time_start
+        print()  
+        print(f"Create grid completed in {duration:.3f} seconds.")
+        print()
         
     except Exception as e:
         print(f"Error in create_grid: {str(e)}")
         raise
 
-#    Initializes the maze using a depth-first search to set directions for each vertex.
+
+#   Initializes the maze using a depth-first search to set directions for each vertex.
+
 def initialize_maze(vertices, rows, cols):
     
     try:
+        time_start = time.time()
+
         visited = set()
-        stack = [(0, 0)]
+        stack = [(0, 0)] # start from the top-left corner or any other starting point
         while stack:
             row, col = stack.pop()
             visited.add((row, col))
@@ -271,27 +289,36 @@ def initialize_maze(vertices, rows, cols):
                     vertices[row][col].direction = vertices[neighbor_row][neighbor_col]
                     stack.append((neighbor_row, neighbor_col))
                     visited.add((neighbor_row, neighbor_col))
+
+        time_end = time.time()
+        duration = time_end - time_start
+        print()
+        print(f"Initialize maze completed in {duration:.3f} seconds.")
+        print()
                     
     except Exception as e:
         print(f"Error in initialize_maze: {str(e)}")
         raise
 
-#    Selects a random neighboring vertex for the given vertex within the maze grid.
 
-#    Parameters:
-#        vertices (list): 2D list of Vertex objects representing the maze grid.
-#        vertex (Vertex): The vertex for which a neighbor is to be found.
-#        rows (int): Total number of rows in the maze grid.
-#        cols (int): Total number of columns in the maze grid.
+#   Selects a random neighboring vertex for the given vertex within the maze grid.
 
-#    Returns:
-#        Vertex: A randomly selected neighboring vertex that is within grid bounds and not previously visited.
+#   Parameters:
+#       vertices (list): 2D list of Vertex objects representing the maze grid.
+#       vertex (Vertex): The vertex for which a neighbor is to be found.
+#       rows (int): Total number of rows in the maze grid.
+#       cols (int): Total number of columns in the maze grid.
 
-#    This function checks the four possible directions (up, down, left, right) from the given vertex and selects one randomly.
+#   Returns:
+#       Vertex: A randomly selected neighboring vertex that is within grid bounds and not previously visited.
+
+#   This function checks the four possible directions (up, down, left, right) from the given vertex and selects one randomly.
     
 def get_random_neighbor(vertices, vertex, rows, cols):
     
     try:
+        time_start = time.time()
+
         neighbors = []
         if vertex.row > 0:
             neighbors.append(vertices[vertex.row - 1][vertex.col])
@@ -302,25 +329,34 @@ def get_random_neighbor(vertices, vertex, rows, cols):
         if vertex.col < cols - 1:
             neighbors.append(vertices[vertex.row][vertex.col + 1])
         return random.choice(neighbors)
+    
+        time_end = time.time()
+        duration = time_end - time_start
+        print()
+        print(f"Get random neighbour completed in {duration:.3f} seconds.")
+        print()
         
     except Exception as e:
         print(f"Error in get_random_neighbor: {str(e)}")
         raise
 
-#    Creates edges between vertices in the mesh based on their directions to visualize the maze.
 
-#    Parameters:
-#        mesh (Mesh): The Blender mesh data block where the maze geometry is stored.
-#        vertices (list): 2D list of Vertex objects representing the maze grid.
-#        rows (int): Number of rows in the maze grid.
-#        cols (int): Number of columns in the maze grid.
-#        cell_size (float): The size of each cell in the maze.
+#   Creates edges between vertices in the mesh based on their directions to visualize the maze.
 
-#    This function iterates over each vertex and adds an edge to the mesh for each direction that is not None, effectively drawing the maze paths.
+#   Parameters:
+#       mesh (Mesh): The Blender mesh data block where the maze geometry is stored.
+#       vertices (list): 2D list of Vertex objects representing the maze grid.
+#       rows (int): Number of rows in the maze grid.
+#       cols (int): Number of columns in the maze grid.
+#       cell_size (float): The size of each cell in the maze.
+
+#   This function iterates over each vertex and adds an edge to the mesh for each direction that is not None, effectively drawing the maze paths.
 
 def visualize_maze(mesh, vertices, rows, cols, cell_size):
 
     try:
+        time_start = time.time()
+
         edges = []
         for row in range(rows):
             for col in range(cols):
@@ -329,15 +365,24 @@ def visualize_maze(mesh, vertices, rows, cols, cell_size):
                     edges.append((row * cols + col, vertex.direction.row * cols + vertex.direction.col))
         mesh.edges.add(len(edges))
         mesh.edges.foreach_set("vertices", [v for e in edges for v in e])
+
+        time_end = time.time()
+        duration = time_end - time_start
+        print()
+        print(f"Visualize maze completed in {duration:.4f} seconds.")
+        print()
         
     except Exception as e:
         print(f"Error in visualize_maze: {str(e)}")
         raise
 
 
-#    Extrudes the maze's walls vertically to the specified height to create a 3D maze structure.
+#   Extrudes the maze's walls vertically to the specified height to create a 3D maze structure.
+
 def extrude_walls(obj, wall_height):
     try:
+        time_start = time.time()
+
         bpy.context.view_layer.objects.active = obj
         bpy.ops.object.mode_set(mode='EDIT')
         bpy.ops.mesh.select_all(action='SELECT')
@@ -346,39 +391,66 @@ def extrude_walls(obj, wall_height):
         bpy.ops.mesh.select_mode(type='VERT')          
         bpy.ops.object.mode_set(mode='OBJECT')
         remove_non_manifold_vertices(obj)
-        
+
+        time_end = time.time()
+        duration = time_end - time_start
+        print()
+        print(f"Extrude walls completed in {duration:.3f} seconds.")
+        print()
+   
     except Exception as e:
         print(f"Error in extrude_walls: {str(e)}")
         raise        
 
-#    Applies a solidify modifier to the maze object if enabled, enhancing the wall thickness.
+
+#   Applies a solidify modifier to the maze object if enabled, enhancing the wall thickness.
+
 def apply_solidify_modifier(obj, apply_solidify):
     try:
         if  apply_solidify:
+
+            start_time = time.time()
+
             solidify_modifier = obj.modifiers.new(name="Solidify", type='SOLIDIFY')
             solidify_modifier.thickness = 0.15
             solidify_modifier.solidify_mode = 'NON_MANIFOLD'
             solidify_modifier.offset = 0
             bpy.ops.object.modifier_apply(modifier="Solidify")
 
+            end_time = time.time()
+            duration = end_time - start_time
+            print()
+            print(f"Solidify modifier applied in {duration:.3f} seconds.")
+            print()
+
     except Exception as e:
         print(f"Error in apply_solidify_modifier: {str(e)}")
         raise   
 
 
-#    Applies a bevel modifier to the maze object if enabled, smoothing the edges of the maze walls.
+#   Applies a bevel modifier to the maze object if enabled, smoothing the edges of the maze walls.
+
 def apply_bevel_modifier(obj, apply_bevel):
     
     try:
         if apply_bevel:
+            start_time = time.time()
+
             bevel_modifier = obj.modifiers.new(name="Bevel", type='BEVEL')
             bevel_modifier.width = .02
             bevel_modifier.segments = 4
             bpy.ops.object.modifier_apply(modifier="Bevel")
 
+            end_time = time.time()
+            duration = end_time - start_time
+            print()
+            print(f"Bevel modifier applied in {duration:.3f} seconds.")
+            print()
+
     except Exception as e:
         print(f"Error in apply_bevel_modifier: {str(e)}")
         raise           
+
 
 #    Cleans up non-manifold vertices from the maze mesh to ensure mesh integrity, 
 #    particularly by removing leftover vertices that do not form part of the maze walls.
@@ -406,46 +478,32 @@ def apply_bevel_modifier(obj, apply_bevel):
 def remove_non_manifold_vertices(obj):
     
     try:
+        start_time = time.time()
+
         # Switch to edit mode
         bpy.ops.object.mode_set(mode='EDIT')
 
         mesh = obj.data
         bm = bmesh.from_edit_mesh(mesh)
-        bm.faces.ensure_lookup_table()
+        bm.verts.ensure_lookup_table()
+        bm.edges.ensure_lookup_table()
 
         # Deselect all elements first
         bpy.ops.mesh.select_all(action='DESELECT')
 
-        # Get all islands (disconnected mesh elements)
-        bm.verts.ensure_lookup_table()
-        islands = []
-        visited = set()
-
-        for vert in bm.verts:
-            if vert not in visited:
-                stack = [vert]
-                island = set()
-                while stack:
-                    v = stack.pop()
-                    if v not in visited:
-                        visited.add(v)
-                        island.add(v)
-                        for edge in v.link_edges:
-                            for v2 in edge.verts:
-                                if v2 not in visited:
-                                    stack.append(v2)
-                islands.append(island)
-
-        # Select and delete islands with 8 or fewer edges
-        for island in islands:
-            edges = [edge for edge in bm.edges if all(vert in island for vert in edge.verts)]
-            if len(edges) <= 8:
-                for edge in edges:
-                    edge.select = True
-
-        bmesh.update_edit_mesh(mesh)
+        isolated_edges = [edge for edge in bm.edges if len(edge.verts[0].link_edges) == 1 and len(edge.verts[1].link_edges) == 1]
+        for edge in isolated_edges:
+            edge.select = True
         bpy.ops.mesh.delete(type='EDGE')
+        bmesh.update_edit_mesh(mesh)
+        
         bpy.ops.object.mode_set(mode='OBJECT')
+
+        end_time = time.time()
+        duration = end_time - start_time
+        print()
+        print(f"Non-manifold vertices removed in {duration:.3f} seconds. ")
+        print()
 
     except Exception as e:
         print(f"Error in remove_non_manifold_vertices: {str(e)}")
@@ -469,6 +527,8 @@ def remove_non_manifold_vertices(obj):
 def delete_islands_with_up_to_n_faces(obj, delete_islands, island_wall_count):
     
     try:
+        time_start = time.time()
+
         if delete_islands:    
             # Switch to edit mode
             bpy.ops.object.mode_set(mode='EDIT')
@@ -500,7 +560,6 @@ def delete_islands_with_up_to_n_faces(obj, delete_islands, island_wall_count):
                                         stack.append(v2)
                     islands.append(island)
 
-
             for island in islands:
                 faces = [face for face in bm.faces if all(vert in island for vert in face.verts)]
                 if len(faces) <= island_wall_count:
@@ -511,24 +570,41 @@ def delete_islands_with_up_to_n_faces(obj, delete_islands, island_wall_count):
             bpy.ops.mesh.delete(type='FACE')
             bpy.ops.object.mode_set(mode='OBJECT')
 
+            time_end = time.time()
+            duration = time_end - time_start
+            print()
+            print(f"Islands with {island_wall_count} faces removed in {duration:.3f} seconds.")
+            print()
+
     except Exception as e:
         print(f"Error in delete_islands_with_up_to_n_faces: {str(e)}")
         raise
 
-#    Applies transformations to the maze object and sets its origin for consistent scaling and manipulation.
+
+#   Applies transformations to the maze object and sets its origin for consistent scaling and manipulation.
+
 def apply_transform_and_cleanup(obj, wall_height):
     try:
+        time_start = time.time()
+
         bpy.ops.object.transform_apply(location=True, rotation=False, scale=False)
         bpy.ops.object.origin_set(type='GEOMETRY_ORIGIN', center='MEDIAN')
         obj.location.z = wall_height / 2
         bpy.ops.object.transform_apply(location=True, rotation=False, scale=False)
+
+        time_end = time.time()
+        duration = time_end - time_start
+        print()
+        print(f"Transform and cleanup completed in {duration:.3f} seconds.")
+        print()
 
     except Exception as e:
         print(f"Error in apply_transform_and_cleanup: {str(e)}")
         raise
 
 
-#    UI panel for the 3D Viewport that provides a user interface to control maze generation parameters.
+#   UI panel for the 3D Viewport that provides a user interface to control maze generation parameters.
+
 class VIEW3D_PT_CreateMazeMenu(bpy.types.Panel):
     bl_label = "Maze Generator"
     bl_idname = "VIEW3D_PT_CreateMazeMenu"
@@ -537,14 +613,14 @@ class VIEW3D_PT_CreateMazeMenu(bpy.types.Panel):
     bl_category = 'Create'
     bl_description = "Generate a maze with customizable parameters"
     
-#        Draws the UI elements for controlling maze generation within the 3D Viewport's Create menu.
+#   Draws the UI elements for controlling maze generation within the 3D Viewport's Create menu.
 
-#        This method populates the panel with interactive controls that allow users to:
-#        - Initiate maze generation via a button.
-#        - Adjust key maze parameters such as size, complexity, and modifiers in real-time.
-#        - Each control is linked to a property that influences the maze generation algorithm when the 'Generate Maze' button is pressed.
+#   This method populates the panel with interactive controls that allow users to:
+#       - Initiate maze generation via a button.
+#       - Adjust key maze parameters such as size, complexity, and modifiers in real-time.
+#       - Each control is linked to a property that influences the maze generation algorithm when the 'Generate Maze' button is pressed.
 
-#        The layout is organized to provide a user-friendly interface, with parameters grouped logically to guide the user through the setup process.
+#   The layout is organized to provide a user-friendly interface, with parameters grouped logically to guide the user through the setup process.
 
     def draw(self, context):
         layout = self.layout
@@ -571,7 +647,6 @@ classes = (OBJECT_OT_GenerateMaze, VIEW3D_PT_CreateMazeMenu)
 def register():
     for cls in classes:
         bpy.utils.register_class(cls)
-
 
 
 def unregister():
