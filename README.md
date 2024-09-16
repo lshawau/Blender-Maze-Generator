@@ -1,8 +1,6 @@
 # Blender-Maze-Generator
 A comprehensive Maze generator for Blender 4.1+
 
-*** Please note, This add-on has been accepted as an extension for blender 4.2. You can now find it in the preferences - Add-ons menu for your convenience, you no longer need to visit this project, however I will update the codebase here whenever a change needs to be made and is approved so you have full transparency of what it does. Thanks for checking out my project. ***
-
 **Description:**
 The Maze Generator is a Blender add-on designed to create customizable, random maze meshes within Blender. This tool is ideal for users in game development, architectural visualization, or artistic projects who need to quickly generate complex mazes with various configurations.
 
@@ -33,7 +31,7 @@ Lee Shaw
 
 
 **Version:**
-0.2.1
+0.2.4
 
 
 **License:**
