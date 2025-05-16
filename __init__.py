@@ -197,7 +197,7 @@ class OBJECT_OT_GenerateMaze(bpy.types.Operator):
 
         try:
             time_start = time.perf_counter()
-            print("Maze Generator version 0.2.3")
+            print("Maze Generator version 0.2.5")
             random.seed(self.random_seed)
 
             self.deselect_objects()
