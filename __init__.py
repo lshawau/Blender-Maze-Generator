@@ -1,7 +1,7 @@
 # ----------------------------------------------------------------------------#
 #                                    LICENCE                                  #
 # ----------------------------------------------------------------------------#
-#   Copyright (C) <2024>  <Lee Shaw>
+#   Copyright (C) <2025>  <Lee Shaw>
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
 #   the Free Software Foundation; either version 2 of the License, or
@@ -27,7 +27,7 @@ bl_info = {
     "blender": (4, 1, 0),
     "category": "Object",
     "author": "Lee Shaw",
-    "version": (0, 2, 4),
+    "version": (0, 2, 5),
     "location": "View3D > Sidebar > Create",
     "description": "Generates a random maze mesh",
     "warning": "",
@@ -98,61 +98,69 @@ class OBJECT_OT_GenerateMaze(bpy.types.Operator):
     #   post 'Generate Maze' button press, benefiting users with
     #   slower PCs or when generating large, laggy mazes.
 
-    random_seed: bpy.props.IntProperty( # type: ignore
+    random_seed: bpy.props.IntProperty(
         name="Random Seed",
         default=0,
         description="Seed value for random maze generation",
     )
 
-    rows: bpy.props.IntProperty( # type: ignore
+    rows: bpy.props.IntProperty(
         name="Rows", default=20, min=1, description="Number of rows in the maze grid"
     )
 
-    columns: bpy.props.IntProperty( # type: ignore
+    columns: bpy.props.IntProperty(
         name="Columns",
         default=20,
         min=1,
         description="Number of columns in the maze grid",
     )
 
-    cell_size: bpy.props.IntProperty( # type: ignore
+    cell_size: bpy.props.IntProperty(
         name="Cell Size", default=2, min=1, description="Size of each maze cell (XY)"
     )
 
-    wall_height: bpy.props.FloatProperty( # type: ignore
+    wall_height: bpy.props.FloatProperty(
         name="Wall Height",
         default=2.4,
         min=0.01,
         description="Height of the maze walls",
     )
 
-    iterations: bpy.props.IntProperty( # type: ignore
+    iterations: bpy.props.IntProperty(
         name="Iterations",
         default=5,
         min=1,
         description="Number of iterations for maze generation algorithm",
     )
 
-    delete_islands: bpy.props.BoolProperty( # type: ignore
+    delete_islands: bpy.props.BoolProperty(
         name="Delete Islands",
         default=True,
         description="Whether to delete isolated areas of the maze",
     )
 
-    wall_count: bpy.props.IntProperty( # type: ignore
+    wall_count: bpy.props.IntProperty(
         name="Island Wall Count",
         default=6,
         min=0,
         description="Determines the quantity of walls that will be removed",
     )
 
-    apply_solidify: bpy.props.BoolProperty( # type: ignore
+    apply_solidify: bpy.props.BoolProperty(
         name="Apply Solidify",
         default=True,
         description="Whether to apply the solidify modifier to the maze walls",
     )
 
-    apply_bevel: bpy.props.BoolProperty( # type: ignore
+    wall_thickness: bpy.props.FloatProperty(  # type: ignore
+        name="Wall Thickness",
+        default=0.15,
+        min=0.01,
+        max=1.0,
+        description="Thickness of the maze walls",
+    )
+
+    apply_bevel: bpy.props.BoolProperty(
         name="Apply Bevel",
         default=True,
         description="Whether to apply the bevel modifier to the maze walls",
@@ -189,7 +197,7 @@ class OBJECT_OT_GenerateMaze(bpy.types.Operator):
 
         try:
             time_start = time.perf_counter()
-            print("Maze Generator version 0.2.4")
+            print("Maze Generator version 0.2.3")
             random.seed(self.random_seed)
 
             self.deselect_objects()
@@ -204,6 +212,7 @@ class OBJECT_OT_GenerateMaze(bpy.types.Operator):
                 self.delete_islands,
                 self.wall_count,
                 self.apply_solidify,
+                self.wall_thickness,
                 self.apply_bevel,
             )
 
@@ -305,6 +314,7 @@ def create_grid(
     delete_islands,
     wall_count,
     apply_solidify,
+    wall_thickness,
     apply_bevel,
 ):
 
@@ -347,7 +357,7 @@ def create_grid(
         extrude_walls(obj, wall_height)
 
         if apply_solidify:
-            apply_solidify_modifier(obj, apply_solidify)
+            apply_solidify_modifier(obj, apply_solidify, wall_thickness)
 
         if delete_islands:
             delete_more_walls(obj, delete_islands, wall_count)
@@ -546,7 +556,7 @@ def extrude_walls(obj, wall_height):
 #   enhancing the wall thickness.
 
 
-def apply_solidify_modifier(obj, apply_solidify):
+def apply_solidify_modifier(obj, apply_solidify, wall_thickness):
 
     try:
         if apply_solidify:
@@ -554,7 +564,7 @@ def apply_solidify_modifier(obj, apply_solidify):
             start_time = time.perf_counter()
 
             solidify_modifier = obj.modifiers.new(name="Solidify", type="SOLIDIFY")
-            solidify_modifier.thickness = 0.15
+            solidify_modifier.thickness = wall_thickness
             solidify_modifier.solidify_mode = "NON_MANIFOLD"
             solidify_modifier.offset = 0
             bpy.ops.object.modifier_apply(modifier="Solidify")
@@ -895,6 +905,12 @@ class VIEW3D_PT_CreateMazeMenu(bpy.types.Panel):
             wm.operator_properties_last(OGM),
             "apply_solidify",
         )
+
+        layout.prop(
+            wm.operator_properties_last(OGM),
+            "wall_thickness",
+        )
+
         layout.prop(
             wm.operator_properties_last(OGM),
             "apply_bevel",
