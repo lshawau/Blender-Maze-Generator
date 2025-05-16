@@ -1,0 +1,21 @@
+schema_version = "1.0.0"
+
+id = "maze_generator"
+version = "0.2.5"
+name = "Maze Generator"
+tagline = "A Maze generator extension for Blender"
+maintainer = "Lee Shaw <leeroymajors@outlook.com.au>"
+type = "add-on"
+
+website = "https://leeroymajors.com.au"
+
+# Optional list defined by Blender and server, see:
+# https://docs.blender.org/manual/en/dev/extensions/tags.html
+tags = ["Add Mesh"]
+
+blender_version_min = "4.2.0"
+
+
+license = [
+  "SPDX:GPL-3.0-or-later",
+]
