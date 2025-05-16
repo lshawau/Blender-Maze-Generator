@@ -8,6 +8,7 @@ The Maze Generator is a Blender add-on designed to create customizable, random m
 Random Maze Generation: Generate mazes with customizable dimensions and properties. Users can adjust parameters such as rows, columns, cell size, and wall height to vary the complexity and size of the maze.
 
 **Solidify Modifier:** Optionally apply a solidify modifier to give thickness to maze walls, enhancing the 3D appearance.
+**Solidify Thickness:** Optionally adjust the solidify modifier wall thickness.
 **Bevel Modifier:** Optionally apply a bevel modifier to smooth out the edges of the maze walls, providing a more polished look.
 **Advanced Configuration Options:** Includes settings for random seed input, allowing users to reproduce specific mazes consistently. Additional controls for deleting isolated sections ("islands") of the maze and adjusting the complexity through iterations.
 **Real-time Updates:** Adjust maze parameters in real-time from the Blender UI, with immediate visual feedback in the 3D view.
@@ -31,7 +32,7 @@ Lee Shaw
 
 
 **Version:**
-0.2.4
+0.2.5
 
 
 **License:**
